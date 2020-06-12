@@ -3,7 +3,7 @@
 import * as path from "https://deno.land/std@0.55.0/path/mod.ts";
 import { copySync, existsSync } from "https://deno.land/std@0.55.0/fs/mod.ts";
 import * as colors from "https://deno.land/std@0.55.0/fmt/colors.ts";
-import { decompress } from "https://deno.land/x/lz4@v0.1.1/mod.ts";
+//import { decompress } from "https://deno.land/x/lz4@v0.1.1/mod.ts";
 import { readZip } from "https://raw.githubusercontent.com/hayd/deno-zip/6ab1cf5081dbe63d55016a74c79df98025e2b5e3/mod.ts";
 import env from "./src/env.js";
 import { crossPlatformPathConversion, printProgressBar } from "./src/util.js";
@@ -43,15 +43,15 @@ function createCacheDirectory() {
  * features as well, at least not easily.
  */
 async function fetchCef(platformName) {
-    let cefBinaryUrl = `https://github.com/denjucks/deno-cef/releases/download/0.0.1/${platformName}-denocef.zip.xz`;
+    let cefBinaryUrl = `https://github.com/denjucks/deno-cef/releases/download/0.0.1/${platformName}-denocef.zip`;
 
     // Progress message for the initial fetch
     console.log();
-    console.log(colors.cyan(` Step 1/5)`));
+    console.log(colors.cyan(` Step 1/4)`));
     console.log("    " + `
     Fetching the DenoCEF binaries for ${platformName}. Please wait, as this 
     process will take a while due to the large size of the binaries.`.trim());
-    printProgressBar(0,5);
+    printProgressBar(0,4);
     console.log();
 
     // Performing the fetch
@@ -64,41 +64,52 @@ async function fetchCef(platformName) {
             try { Deno.mkdirSync(cacheDirectory) } catch(e) {}
 
             // Progress message for writing the binaries to disk
-            console.log(colors.cyan(` Step 2/5)`));
+            console.log(colors.cyan(` Step 2/4)`));
             console.log("    " + `
     Writing the binaries to
     ${cacheDirectory}`.trim());
-            printProgressBar(1,5);
+            printProgressBar(1,4);
             console.log();
 
             // Writing the binaries to the cache
-            Deno.writeFileSync(path.join(cacheDirectory, platformName+"-denocef.zip.xz"), await data.arrayBuffer());
+            Deno.writeFileSync(path.join(cacheDirectory, platformName+"-denocef.zip"), await data.arrayBuffer());
             data = undefined;
-
-            // Progress message for decompressing the fetched binaries.
-            console.log(colors.cyan(" Step 3/5)"));
-            console.log("    Decompressing the binaries. Please wait as this process will take a while.");
-            printProgressBar(2,5);
-            console.log();
-
-            // Decompressing the binaries and removing the old compressed binary file
-            Deno.writeFileSync(path.join(cacheDirectory, "denocef.zip"), decompress(Deno.readFileSync(path.join(cacheDirectory, platformName+"-denocef.zip.xz"))))
-            Deno.removeSync(path.join(cacheDirectory, platformName+"-denocef.zip.xz"));
-
-            // Progress message for unzipping the binaries.
-            console.log(colors.cyan(" Step 4/5)"));
-            console.log("    Unarchiving the binaries. Please wait as this process will take a while.");
-            printProgressBar(3,5);
-            console.log();
-
-            // Unzipping the decompressed binaries
-            let zip = await readZip(path.join(cacheDirectory, "denocef.zip"));
-            await zip.unzip(cacheDirectory);
-            zip = undefined;
-
-            // Removing the zipped archive
-            Deno.removeSync(path.join(cacheDirectory, "denocef.zip"));
         });
+}
+
+
+/*
+async function decompressCef(platformName) {
+    let cacheDirectory = path.join(getCacheDirectory(), platformName);
+
+    // Progress message for decompressing the fetched binaries.
+    console.log(colors.cyan(" Step 3/5)"));
+    console.log("    Decompressing the binaries. Please wait as this process will take a while.");
+    printProgressBar(2,5);
+    console.log();
+
+    // Decompressing the binaries and removing the old compressed binary file
+    Deno.writeFileSync(path.join(cacheDirectory, "denocef.zip"), decompress(Deno.readFileSync(path.join(cacheDirectory, platformName+"-denocef.zip.xz"))))
+    Deno.removeSync(path.join(cacheDirectory, platformName+"-denocef.zip.xz"));
+}
+*/
+
+async function unzipCef(platformName) {
+    let cacheDirectory = path.join(getCacheDirectory(), platformName);
+
+    // Progress message for unzipping the binaries.
+    console.log(colors.cyan(" Step 3/4)"));
+    console.log("    Unarchiving the binaries. Please wait as this process will take a while.");
+    printProgressBar(2,4);
+    console.log();
+
+    // Unzipping the decompressed binaries
+    let zip = await readZip(path.join(cacheDirectory, platformName+"-denocef.zip"));
+    await zip.unzip(cacheDirectory);
+    zip = undefined;
+
+    // Removing the zipped archive
+    Deno.removeSync(path.join(cacheDirectory, platformName+"-denocef.zip"));
 }
 
 
@@ -106,7 +117,7 @@ async function fetchCef(platformName) {
  * Helper function to create a platform cache directory and run the fetching,
  * decompressing, and unzipping function
  * 
- * @param {string} platformName the name of the platform (either "windows", 
+ * @param {string} platformNplatformNameame the name of the platform (either "windows", 
  * "linux", or "darwin")
  */
 async function downloadCefToCache(platformName) {
@@ -151,19 +162,19 @@ function createNewProject(platformName) {
     const cacheDirectoryPath = getCacheDirectory();
     const platformCacheDirectoryPath = path.join(cacheDirectoryPath, platformName || Deno.build.os);
 
-    const __dirname = crossPlatformPathConversion(Deno.cwd());
+    const __dirnunzipCefame = crossPlatformPathConversion(Deno.cwd());
     
     if (existsSync(path.join(__dirname, "DenoCefProject"))) {
         console.log(colors.yellow("Project already exists in this directory. No new project created."));
     } else {
-        console.log(colors.cyan(" Step 5/5)"));
+        console.log(colors.cyan(" Step 4/4)"));
         console.log(`    Copying ${platformName} cache into new project folder`);
-        printProgressBar(4,5);
+        printProgressBar(3,4);
         console.log();
         copySync(platformCacheDirectoryPath, path.join(__dirname, "DenoCefProject"));
         
         console.log(` Finished creating the new DenoCEF project`);
-        printProgressBar(5,5);
+        printProgressBar(4,4);
         console.log();
     }
 }
@@ -179,7 +190,7 @@ if (import.meta.main) {
         console.log(colors.red("DenoCEF currently does not support MacOS, but is planned in the future. For the time being, please develop your application on either Windows or Linux until full support is added."));
     } else {
         switch (Deno.args[0]) {
-            case "create":
+            case "fetch":
                 if (platformName === "mac") {platformName = "darwin";}
                 
                 if (!existsSync(getCacheDirectory())) {
@@ -189,15 +200,29 @@ if (import.meta.main) {
                 if (!existsSync(path.join(getCacheDirectory(), platformName))) {
                     await downloadCefToCache(platformName);
                 }
-
-                createNewProject(platformName);
                 break;
 
-            case "refresh":
+                /*
+            case "decompress":
+                await decompressCef(platformName);
+                break;
+                */
+
+                /*
+            case "unzip":
+                await unzipCef(platformName);
+                break;
+                */
+
+            case "create":
+                createNewProject(platformName);
+                await unzipCef(platformName);
+                break;
+
+            case "clear":
                 if (platformName === "mac") {platformName = "darwin";}
 
                 clearCefCache(platformName);
-                await downloadCefToCache(platformName);
                 break;
 
             case "package":

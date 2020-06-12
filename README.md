@@ -26,7 +26,7 @@ Once installed, you can create a new DenoCEF project in the current directory wi
 electric create
 ```
 
-The first time you run this command, it will take a while for it to finish running, as this command will fetch a precompiled binary for your platform from this repository, decompress it, unarchive it, cache it, and then copy it from the cache to your local directory. The next time you run this command it will run much faster as it will simply use a copy of DenoCEF from the cache.
+The first time you run this command, it will take a while for it to finish running, as this command will fetch a precompiled binary for your platform, decompress it, unarchive it, cache it, and then copy it from the cache to your local directory. Due to The next time you run this command it will run much faster as it will simply use a copy of DenoCEF from the cache.
 
 Once the project is created, you can run the following command to run DenoCEF:
 
