@@ -231,7 +231,7 @@ if (import.meta.main) {
                 createNewProject(platformName);
                 break;
 
-            case "clear":
+            case "refresh":
                 if (platformName === "mac") {platformName = "darwin";}
 
                 clearCefCache(platformName);
