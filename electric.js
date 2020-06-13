@@ -24,7 +24,7 @@ function createCacheDirectory() {
     const cacheDirectory = getCacheDirectory();
 
     if (!existsSync(cacheDirectory)) {
-        Deno.mkdirSync(cacheDirectory);
+        Deno.mkdirSync(cacheDirectory, {recursive: true});
     }
 }
 
@@ -162,7 +162,7 @@ function createNewProject(platformName) {
     const cacheDirectoryPath = getCacheDirectory();
     const platformCacheDirectoryPath = path.join(cacheDirectoryPath, platformName || Deno.build.os);
 
-    const __dirnunzipCefame = crossPlatformPathConversion(Deno.cwd());
+    const __dirname = crossPlatformPathConversion(Deno.cwd());
     
     if (existsSync(path.join(__dirname, "DenoCefProject"))) {
         console.log(colors.yellow("Project already exists in this directory. No new project created."));
@@ -190,6 +190,7 @@ if (import.meta.main) {
         console.log(colors.red("DenoCEF currently does not support MacOS, but is planned in the future. For the time being, please develop your application on either Windows or Linux until full support is added."));
     } else {
         switch (Deno.args[0]) {
+            /*
             case "fetch":
                 if (platformName === "mac") {platformName = "darwin";}
                 
@@ -201,6 +202,7 @@ if (import.meta.main) {
                     await downloadCefToCache(platformName);
                 }
                 break;
+            */
 
                 /*
             case "decompress":
@@ -215,8 +217,18 @@ if (import.meta.main) {
                 */
 
             case "create":
+                if (platformName === "mac") {platformName = "darwin";}
+                
+                if (!existsSync(getCacheDirectory())) {
+                    createCacheDirectory();
+                }
+
+                if (!existsSync(path.join(getCacheDirectory(), platformName))) {
+                    await downloadCefToCache(platformName);
+                    await unzipCef(platformName);
+                }
+
                 createNewProject(platformName);
-                await unzipCef(platformName);
                 break;
 
             case "clear":
